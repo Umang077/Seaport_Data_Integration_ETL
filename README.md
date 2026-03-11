@@ -7,293 +7,314 @@ This project implements a **hybrid ETL pipeline** that synchronizes seaport data
 The pipeline performs:
 
 - Data extraction from Azure Blob Storage
-- Data transformation (cleaning, validation, deduplication)
+- Data transformation (cleaning, validation, and deduplication)
 - Data loading into PostgreSQL
-- GraphQL API to expose the processed data
+- A GraphQL API to expose the processed data
 - A simple React dashboard to view the results
 
 The goal is to ensure that the seaport data remains synchronized with the client-provided dataset, which is exported twice daily.
 
 ---
 
-# Architecture
+## Architecture
 
-
+```
 Azure Blob Storage
-↓
+        ↓
 Hybrid ETL (Event Driven + Batch)
-↓
+        ↓
 Data Cleaning & Validation
-↓
-PostgreSQL Database
-↓
-Prisma ORM
-↓
-GraphQL API
-↓
-React Dashboard
-
+        ↓
+  PostgreSQL Database
+        ↓
+    Prisma ORM
+        ↓
+   GraphQL API
+        ↓
+  React Dashboard
+```
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-## Backend
+### Backend
 - Node.js
 - Express
 - GraphQL
 - Prisma ORM
 
-## Database
+### Database
 - PostgreSQL
 
-## Frontend
+### Frontend
 - React
 
-## Infrastructure
+### Infrastructure
 - Azure Blob Storage (Data Source)
 
-These technologies align with the recommended stack in the assignment specification.
+These technologies align with the recommended stack defined in the assignment specification.
 
 ---
 
-# Features
+## Features
 
-## Hybrid ETL Pipeline
+### Hybrid ETL Pipeline
 
-The ETL process uses both:
+The ETL process utilizes both of the following approaches:
 
-### Event-driven processing
-ETL runs automatically when the server starts.
+#### Event-Driven Processing
+The ETL runs automatically each time the server starts.
 
-### Batch processing
-ETL runs every **12 hours** using a scheduled cron job.
+#### Batch Processing
+The ETL runs every **12 hours** using a scheduled cron job. *(yet to be implemented but once implemnted will update the github)*
 
-This ensures:
+This combination ensures:
 
-- Immediate synchronization
-- Reliability even if events are missed
+- Immediate data synchronization if the clients are randomly dumping/uploading the data in their excel at any particular time
+- Reliability and consistency even if events are missed as the missed files will be extracted in batches
 
 ---
 
-# Data Processing
+## Data Processing
 
 The pipeline performs the following transformations:
 
 ### Validation
-- Ensures required fields exist
-- Ensures latitude and longitude are valid numbers
+- Ensures all required fields are present
+- Ensures latitude and longitude values are valid numbers
 
 ### Cleaning
-- Removes unnecessary characters
-- Normalizes casing
+- Removes unnecessary characters from field values
+- Normalizes text casing for consistency
 
 ### Deduplication
-- Removes duplicate seaport entries
+- Removes duplicate seaport entries before loading into the database
 
 ### Schema Mapping
 
 Fields stored in the database:
 
 | Field | Description |
-|------|-------------|
-| portName | Name of the seaport |
-| locode | UN/LOCODE |
-| latitude | Geographic latitude |
-| longitude | Geographic longitude |
-| timezoneOlson | Timezone |
-| countryIso | ISO country code |
+|---|---|
+| `portName` | Name of the seaport |
+| `locode` | UN/LOCODE identifier |
+| `latitude` | Geographic latitude |
+| `longitude` | Geographic longitude |
+| `timezoneOlson` | Timezone in Olson format |
+| `countryIso` | ISO country code |
 
-These match the schema requirements defined in the assignment.
-
----
-
-# Project Structure
-
-
-backend
-├ etl
-│ └ syncSeaports.js
-│
-├ graphql
-│ ├ schema.js
-│ └ resolvers.js
-│
-├ prisma
-│ └ schema.prisma
-│
-├ validators
-│ └ seaportValidator.js
-│
-└ server.js
-
-frontend
-└ React dashboard
-
+These fields match the schema requirements defined in the assignment.
 
 ---
 
-# Installation
+## Project Structure
 
-Clone the repository:
+```
+backend/
+├── etl/
+│   └── syncSeaports.js
+├── graphql/
+│   ├── schema.js
+├── prisma/
+│   └── schema.prisma
+├── validators/
+│   └── seaportValidator.js
+└── server.js
+
+frontend/
+└── (React dashboard)
+```
+
+---
+
+## Installation
+
+### Clone the Repository
 
 ```bash
 git clone <repo-url>
 cd project
+```
 
-Install backend dependencies:
+### Install Dependencies
 
+**Install Backend Dependencies:**
+```bash
 cd backend
 npm install
+```
 
-Install frontend dependencies:
-
+**Install Frontend Dependencies:**
+```bash
 cd ../frontend
 npm install
-Environment Variables
+```
 
-Create a .env file inside the backend directory.
+### Environment Variables
+
+ `.env` file will be automaticaly created inside the `backend/` directory when you run the command 
+ ```bash 
+ npx prisma init
+ ```
 
 Example:
 
-DATABASE_URL="postgresql://postgres:password@localhost:5432/seaportdb"
-PORT=4000
-Database Setup (Prisma)
+```env
+DATABASE_URL="prisma+postgres://localhost:51214/?api_key=eyJkYXRhYmFzZVVybCI6InBvc3RncmVzOi8vcG9zdGdyZXM6cG9zdGdyZXNAbG9jYWxob3N0OjUxMjE0L3RlbXBsYXRlMT9zc2xtb2RlPWRpc2FibGUmY29ubmVjdGlvbl9saW1pdD0xJmNvbm5lY3RfdGltZW91dD0wJm1heF9pZGxlX2Nvbm5lY3Rpb25fbGlmZXRpbWU9MCZwb29sX3RpbWVvdXQ9MCZzaW5nbGVfdXNlX2Nvbm5lY3Rpb25zPXRydWUmc29ja2V0X3RpbWVvdXQ9MCIsIm5hbWUiOiJkZWZhdWx0Iiwic2hhZG93RGF0YWJhc2VVcmwiOiJwb3N0Z3JlczovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1MTIxNS90ZW1wbGF0ZTE_c3NsbW9kZT1kaXNhYmxlJmNvbm5lY3Rpb25fbGltaXQ9MSZjb25uZWN0X3RpbWVvdXQ9MCZtYXhfaWRsZV9jb25uZWN0aW9uX2xpZmV0aW1lPTAmcG9vbF90aW1lb3V0PTAmc2luZ2xlX3VzZV9jb25uZWN0aW9ucz10cnVlJnNvY2tldF90aW1lb3V0PTAifQ
+```
+
+---
+
+## Database Setup (Prisma)
 
 This project uses Prisma ORM to manage the PostgreSQL database.
 
-Step 1 — Generate Prisma Client
+### Step 1 — Generate Prisma Client
 
 Run:
 
+The below code will generate the confi files and to run in javascript change the .ts file to .js, also paste the code that i uploaded in prisma.confi.js file and also install the npm modules required before trying to run other npx prisma command
+
+```bash
+npx prisma init
+```
+The below command will run the prisma dev server by loading Prisma config from prisma.config.js
+
+```bash
+npx prisma dev 
+```
+Run rest of the npx prisma command only after running the above code
+
+```bash
 npx prisma generate
-Why this is required
+```
 
-Prisma reads the schema from:
+**Why this is required:**
 
-prisma/schema.prisma
-
-and generates a Prisma Client, which is a type-safe database client used in the application.
+Prisma reads the schema from `prisma/schema.prisma` and generates a Prisma Client, which is a type-safe database client used throughout the application.
 
 Without running this command:
 
-Prisma queries will fail
+- Prisma queries will fail and produce the error that I faced in my video as well. 
+- The application will be unable to communicate with the database
 
-The application cannot communicate with the database
-
-Step 2 — Run Database Migration
+### Step 2 — Run Database Migration
 
 Run:
 
+```bash
 npx prisma migrate dev
-What this does
+```
+
+**What this does:**
 
 This command:
 
-Creates database tables
-
-Applies schema migrations
-
-Updates the database structure
-
-Regenerates Prisma Client
+- Creates the necessary database tables
+- Applies all schema migrations
+- Updates the database structure to match the Prisma schema
+- Regenerates the Prisma Client
 
 Example table created:
 
-Seaport
+**`Seaport`** with the following columns:
 
-with columns:
+`id`, `portName`, `locode`, `latitude`, `longitude`, `timezoneOlson`, `countryIso`
 
-id
-portName
-locode
-latitude
-longitude
-timezoneOlson
-countryIso
-Step 3 — Reset Database (if required)
-
-If you need to clear the database and reapply migrations, run:
-
-npx prisma migrate reset
-What this command does
-
-Drops the existing database
-
-Recreates the database
-
-Reapplies all migrations
-
-Seeds the database if configured
-
-When to use it
-
-Use this command when:
-
-schema changes break the database
-
-testing a fresh setup
-
-fixing migration conflicts
-
-This ensures the database structure matches the Prisma schema.
-
-Step 4 — View Database
+### Step 3 — Reset Database *(if required)*
 
 Run:
 
+```bash
+npx prisma migrate reset
+```
+
+**What this command does:**
+
+- Drops the existing database
+- Recreates the database from scratch
+- Reapplies all migrations in order
+- Seeds the database if a seed script is configured
+
+**When to use it:**
+
+Use this command when:
+
+- Schema changes have caused conflicts or broken the database
+- Testing a completely fresh setup
+- Resolving migration conflicts
+
+This ensures the database structure is fully aligned with the current Prisma schema.
+
+### Step 4 — View Database
+
+Run:
+
+```bash
 npx prisma studio
+```
+*(This only works with local postgresql on your system. For virtual database with Database_link in .env as given prisma+postgres the above command won't work)*
 
-This opens a visual database browser.
+This opens a visual database browser where you can:
 
-You can:
+- Inspect all tables and their records
+- Edit individual records directly
+- Verify that the ETL results have been loaded correctly
 
-Inspect tables
+---
 
-Edit records
-
-Verify ETL results
-
-Running the Backend
+## Running the Backend
 
 Start the backend server:
 
+```bash
 npm run dev
+```
 
-Server runs at:
+The server will be running at:
 
+```
 http://localhost:4000/graphql
-Running the Frontend
+```
+
+---
+
+## Running the Frontend
 
 Start the React dashboard:
 
+```bash
 npm run dev
+```
 
-Open:
+Open in your browser:
 
+```
 http://localhost:5173
-ETL Workflow
+```
 
-When the backend starts:
+---
 
-Connects to Azure Blob Storage
+## ETL Workflow
 
-Lists available files
+When the backend starts, the ETL pipeline will:
 
-Downloads the Excel file
+1. Connect to Azure Blob Storage
+2. List all available files in the container
+3. Download the relevant Excel file (for this I have considered the exact name of the file seaport_data_extract.xlsx)
+4. Parse the spreadsheet data into rows
+5. Validate each row against the defined rules
+6. Remove any duplicate entries
+7. Insert the clean, validated data into PostgreSQL
 
-Parses spreadsheet data
+---
 
-Validates rows
+## API Example
 
-Removes duplicates
+**GraphQL query:**
 
-Inserts clean data into PostgreSQL
-
-API Example
-
-GraphQL query:
-
+```graphql
 query {
   seaports {
     portName
@@ -302,9 +323,11 @@ query {
     longitude
   }
 }
+```
 
-Example response:
+**Example response:**
 
+```json
 {
   "data": {
     "seaports": [
@@ -315,45 +338,116 @@ Example response:
     ]
   }
 }
-ETL Scheduling
+```
 
-The ETL pipeline runs:
+---
 
-Once on server startup
+## ETL Scheduling
 
-Every 12 hours using cron (YET TO BE IMPLEMENTED)
+The ETL pipeline is scheduled to run:
 
-This ensures that the system stays synchronized with client data uploads.
+- **Once on server startup** — to ensure immediate synchronization *(implemented)*
+- **Every 12 hours using cron** — *(yet to be implemented)*
 
-Scalability Considerations
+This scheduling strategy ensures the system stays continuously synchronized with the client's data uploads.
 
-Possible improvements:
+---
 
-Redis caching for frequent queries
+## Scalability Considerations
 
-Message queue for ETL processing
+Possible future improvements include:
 
-Horizontal scaling using load balancers
+- **Redis caching** for handling frequent and repeated queries more efficiently
+- **Message queues** for more reliable and decoupled ETL processing
+- **Horizontal scaling** using load balancers to distribute traffic across instances
+- **Serverless ETL workers** for cost-effective, on-demand processing
 
-Serverless ETL workers
+---
 
-Edge Cases Considered
+## Edge Cases Considered
 
-Malformed data rows
+The pipeline has been designed to gracefully handle the following scenarios:
 
-Missing coordinates
+- Malformed data rows
+- Missing or null coordinates
+- Inconsistent port code formats
+- Duplicate entries across imports
+- Corrupted or unreadable Excel files
 
-Inconsistent port codes
+---
 
-Duplicate entries
+## How to Run the Entire Project
 
-Corrupted Excel files
+1. Clone the repository
+2. Install all dependencies
+3. Configure the `.env` file
+4. Run `prisma generate`
+5. Run `prisma migrate dev`
+6. Start the backend server
+7. Start the frontend application
 
-How to Run the Entire Project
-1. Clone repository
-2. Install dependencies
-3. Configure .env
-4. Run prisma generate
-5. Run prisma migrate dev
-6. Start backend
-7. Start frontend
+
+# Extra Questions
+
+## 1. What are some edge cases you would take care of before shipping this to production?
+
+Before deploying this integration to production, I would account for several edge cases related to data quality, reliability, and system stability.
+
+### Data Quality Issues
+Since the platform is multi-tenant and different clients may provide inconsistent data, the ETL pipeline must handle malformed or incomplete records. Examples include:
+- Missing required fields such as `portName`, `locode`, `latitude`, or `longitude`
+- Invalid coordinate values (non-numeric or out-of-range latitude/longitude)
+- Inconsistent `portCode` and `unLocCode` values
+- Also to consider unique value during model creation which will be difficult to duplicate 
+
+These are handled by the validation layer which ensures only valid records are inserted into the database.
+
+### Duplicate Data
+Because the client exports their data twice daily, duplicate records may appear. To prevent this, the pipeline performs deduplication before inserting records and uses database constraints or upsert operations to avoid duplicates.
+
+### Corrupted or Unexpected File Formats
+The uploaded Excel file may sometimes be corrupted or contain unexpected structures (multiple sheets, missing headers, etc.). In such cases the ETL process should fail gracefully and log the error without crashing the server.
+
+### Large File Handling
+If the dataset grows significantly, downloading the entire file into memory may become inefficient. In production this could be handled with streaming processing or chunk-based parsing.
+
+### Network or Azure Connectivity Failures
+Azure Blob access might temporarily fail. Retrying the download with exponential backoff or implementing a retry mechanism would improve reliability.
+
+---
+
+## 2. How would you scale this to handle high amounts of traffic?
+
+Several architectural improvements could be introduced to support high traffic and larger datasets.
+
+### API Layer Scaling
+The GraphQL API could be horizontally scaled by running multiple instances behind a load balancer. This ensures the system can handle a larger number of concurrent requests.
+
+### Caching
+Frequently requested seaport data could be cached using a caching layer such as Redis. This would reduce database load and significantly improve response times for common queries and using react-query for frontend cahcing along with comparing if apollo performs better than react query or other caching technology.
+
+### Database Optimization
+Indexes could be added to frequently queried fields such as `locode` or `countryCode`. Query optimization and connection pooling would also improve database performance.
+
+### ETL Processing
+Instead of running the ETL process directly in the API server, it could be moved to a background worker or queue-based system (e.g., using message queues like Kafka or RabbitMQ). This would decouple data ingestion from API traffic.
+
+### Data Pagination
+GraphQL queries should implement pagination to prevent large responses from overloading the server or the client.
+
+---
+
+## 3. What's important for you to work well in a fully remote team?
+
+For me, working effectively in a remote team depends on communication, transparency, and ownership.
+
+### Communication
+Regular updates and documentation are essential when team members are working in different locations and time zones. 
+
+### Asynchronous Collaboration
+Since remote teams often work asynchronously, it's important to structure work in a way that others can easily understand and continue.
+
+### Accountability and Ownership
+Engineer should be given an opprotunity to take ownership of their work and proactively communicate progress, blockers, or design decisions.
+
+Overall, successful remote work relies on strong communication, clear documentation, and a culture of trust and accountability.
