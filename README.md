@@ -67,7 +67,7 @@ The ETL process utilizes both of the following approaches:
 The ETL runs automatically each time the server starts.
 
 #### Batch Processing
-The ETL runs every **12 hours** using a scheduled cron job. *(yet to be implemented but once implemnted will update the github)*
+The ETL runs every **12 hours**    using a scheduled cron job. *(yet to be implemented but once implemnted will update the github)*
 
 This combination ensures:
 
@@ -157,6 +157,7 @@ npm install
  ```bash 
  npx prisma init
  ```
+ **Note: After generating the .env file, update the DATABASE_URL port from the default 51213 to 51314 to prevent possible errors.**
 
 Example:
 
@@ -170,11 +171,12 @@ DATABASE_URL="prisma+postgres://localhost:51214/?api_key=eyJkYXRhYmFzZVVybCI6InB
 
 This project uses Prisma ORM to manage the PostgreSQL database.
 
-### Step 1 — Generate Prisma Client
+### Step 1: Generate Prisma Client
 
 Run:
 
-The below code will generate the confi files and to run in javascript change the .ts file to .js, also paste the code that i uploaded in prisma.confi.js file and also install the npm modules required before trying to run other npx prisma command
+
+The below code will generate the config files and to run in javascript change the .ts file to .js, also paste the code that i uploaded in prisma.config.js file and also install the npm modules required before trying to run other npx prisma command.
 
 ```bash
 npx prisma init
@@ -184,7 +186,7 @@ The below command will run the prisma dev server by loading Prisma config from p
 ```bash
 npx prisma dev 
 ```
-Run rest of the npx prisma command only after running the above code
+**Run rest of the npx prisma command only after running the above code**
 
 ```bash
 npx prisma generate
@@ -199,7 +201,7 @@ Without running this command:
 - Prisma queries will fail and produce the error that I faced in my video as well. 
 - The application will be unable to communicate with the database
 
-### Step 2 — Run Database Migration
+### Step 2: Run Database Migration
 
 Run:
 
@@ -222,7 +224,7 @@ Example table created:
 
 `id`, `portName`, `locode`, `latitude`, `longitude`, `timezoneOlson`, `countryIso`
 
-### Step 3 — Reset Database *(if required)*
+### Step 3: Reset Database *(if required)*
 
 Run:
 
@@ -247,7 +249,7 @@ Use this command when:
 
 This ensures the database structure is fully aligned with the current Prisma schema.
 
-### Step 4 — View Database
+### Step 4: View Database
 
 Run:
 
@@ -303,10 +305,13 @@ When the backend starts, the ETL pipeline will:
 1. Connect to Azure Blob Storage
 2. List all available files in the container
 3. Download the relevant Excel file (for this I have considered the exact name of the file seaport_data_extract.xlsx)
-4. Parse the spreadsheet data into rows
-5. Validate each row against the defined rules
-6. Remove any duplicate entries
-7. Insert the clean, validated data into PostgreSQL
+4. For random file name pass ".xlsx" as the string in place of the mentioned xlsx file or you can replace it with the below code.
+*(if (blob.name.endsWith(".xlsx")) {
+        fileName = blob.name;})*
+5. Parse the spreadsheet data into rows
+6. Validate each row against the defined rules
+7. Remove any duplicate entries
+8. Insert the clean, validated data into PostgreSQL
 
 ---
 
