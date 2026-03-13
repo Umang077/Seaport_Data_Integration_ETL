@@ -88,8 +88,8 @@ The pipeline performs the following transformations:
 - Removes unnecessary characters from field values
 - Normalizes text casing for consistency
 
-### Deduplication
-- Removes duplicate seaport entries before loading into the database
+### Deduplication 
+- Removes duplicate seaport entries before loading into the database *(yet to be refined)*
 
 ### Schema Mapping
 
