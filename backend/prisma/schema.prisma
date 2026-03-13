@@ -20,5 +20,5 @@ model Seaport{
   timezoneOlson String?
   countryIso String?
   createdAt DateTime @default(now())
-  @@unique([locode,portName,latitude,longitude ])
+  @@unique([locode, portName, latitude, longitude], name: "unique_seaport")
 }

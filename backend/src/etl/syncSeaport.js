@@ -3,6 +3,7 @@ const XLSX=require("@e965/xlsx");
 const SAS_URL="https://tillachallenge.blob.core.windows.net/challenge-data?sp=rl&st=2026-02-10T07:18:36Z&se=2026-04-01T15:33:36Z&spr=https&sv=2024-11-04&sr=c&sig=hWOx9eiybuxnOIIFwUqtNQF%2FMz5oyAwV8HXJWt6pYjM%3D";
 const {prisma}=require("../prisma/client");
 const validateSeaport=require("../validator/seaportValidatorCode");
+const fs=require("fs");
 async function syncSeaport(){
     try{
         const containerClient= new BlobServiceClient(SAS_URL).getContainerClient("");
@@ -22,7 +23,7 @@ async function syncSeaport(){
             chunks.push(chunk);
         }
         const buffer=Buffer.concat(chunks);
-        const fs=require("fs");
+
         fs.writeFileSync("seaport_data_extract.xlsx",buffer);
         const workbook=XLSX.read(buffer,{type:"buffer"});
         const sheet=workbook.Sheets[workbook.SheetNames[0]];
@@ -37,16 +38,39 @@ async function syncSeaport(){
             // console.log("Invalid row skipped:", row);
             continue;
         }
-        await prisma.seaport.create({
-            data: {
-            portName: dataVal.portName,
-            locode: dataVal.locode,
-            latitude: dataVal.latitude,
-            longitude: dataVal.longitude,
-            timezoneOlson: "",
-            countryIso: dataVal.countryIso || ""
+        /*
+            Important Observation:
+            Previously the ERROR Invalid `prisma.seaport.create()` invocation in
+            await prisma.seaport.create(Unique constraint failed on the fields: (`locode`, `"portName"`, `latitude`, `longitude`)
+            
+            The error was coming as duplicate rows may appear in the source dataset. 
+            Using `create() operation` attempts to insert the record
+            every time, which may conflict with the unique constraint.
+
+            To resolve this, the logic was updated to use `prisma.seaport.upsert() operation`,
+            which inserts the record if it does not exist or skips/updates it if it
+            already exists. This prevents duplicate entries while keeping the ETL idempotent.
+        */
+        await prisma.seaport.upsert({
+            where: {
+                unique_seaport: {
+                locode: dataVal.locode,
+                portName: dataVal.portName,
+                latitude: dataVal.latitude,
+                longitude: dataVal.longitude
+                }
+            },
+            update: {},
+            create: {
+                portName: dataVal.portName,
+                locode: dataVal.locode,
+                latitude: dataVal.latitude,
+                longitude: dataVal.longitude,
+                timezoneOlson: dataVal.timezoneOlson,
+                countryIso: dataVal.countryIso
             }
         });
+
 
         
         }

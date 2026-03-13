@@ -20,7 +20,7 @@ function App() {
         </thead>
         <tbody>
           {seaports.map((port)=>(
-            <tr key={port.locode}>
+            <tr key={port.id}>
               <td>
                 {port.portName}
               </td>
