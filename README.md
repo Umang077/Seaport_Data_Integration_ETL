@@ -370,7 +370,7 @@ query {
 The ETL pipeline is scheduled to run:
 
 - **Once on server startup** — to ensure immediate synchronization *(implemented)*
-- **Every 12 hours using cron** — *(yet to be implemented)*
+- **Every 12 hours using cron** — *(implemented)*
 
 This scheduling strategy ensures the system stays continuously synchronized with the client's data uploads.
 
