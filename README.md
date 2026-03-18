@@ -67,7 +67,7 @@ The ETL process utilizes both of the following approaches:
 The ETL runs automatically each time the server starts.
 
 #### Batch Processing
-The ETL runs every **12 hours**    using a scheduled cron job. *(yet to be implemented but once implemnted will update the github)*
+The ETL runs every **12 hours/y hour** using a scheduled cron job. *(implemnted and updated the github)*
 
 This combination ensures:
 
@@ -89,7 +89,7 @@ The pipeline performs the following transformations:
 - Normalizes text casing for consistency
 
 ### Deduplication 
-- Removes duplicate seaport entries before loading into the database *(yet to be refined)*
+- Removes duplicate seaport entries before loading into the database 
 
 ### Schema Mapping
 
@@ -270,6 +270,20 @@ This opens a visual database browser where you can:
 
 Start the backend server:
 
+1. Navigate to the backend folder:
+```bash
+   cd backend
+```
+2. Initialize Prisma and setup the database:
+```bash
+npx prisma dev
+```
+This step will:
+Apply database migrations
+Generate Prisma client
+Ensure required tables exist
+
+3. Start the backend server:
 ```bash
 npm run dev
 ```
@@ -284,7 +298,11 @@ http://localhost:4000/graphql
 
 ## Running the Frontend
 
-Start the React dashboard:
+1. Navigate to the frontend folder:
+```bash
+   cd frontend
+```
+2. Start the React dashboard:
 
 ```bash
 npm run dev
