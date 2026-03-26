@@ -1,6 +1,10 @@
 const {BlobServiceClient}=require("@azure/storage-blob");
 const XLSX=require("@e965/xlsx");
-const SAS_URL="https://tillachallenge.blob.core.windows.net/challenge-data?sp=rl&st=2026-02-10T07:18:36Z&se=2026-04-01T15:33:36Z&spr=https&sv=2024-11-04&sr=c&sig=hWOx9eiybuxnOIIFwUqtNQF%2FMz5oyAwV8HXJWt6pYjM%3D";
+
+// Store sensitive configuration (e.g., service URLs or API endpoints)
+// in environment variables to avoid hardcoding secrets in the codebase.
+
+const SAS_URL=process.env.SEAPORT_URL;
 const {prisma}=require("../prisma/client");
 const validateSeaport=require("../validator/seaportValidatorCode");
 const fs=require("fs");
