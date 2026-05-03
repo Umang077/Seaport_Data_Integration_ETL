@@ -458,19 +458,4 @@ Instead of running the ETL process directly in the API server, it could be moved
 ### Data Pagination
 GraphQL queries should implement pagination to prevent large responses from overloading the server or the client.
 
----
 
-## 3. What's important for you to work well in a fully remote team?
-
-For me, working effectively in a remote team depends on communication, transparency, and ownership.
-
-### Communication
-Regular updates and documentation are essential when team members are working in different locations and time zones. 
-
-### Asynchronous Collaboration
-Since remote teams often work asynchronously, it's important to structure work in a way that others can easily understand and continue.
-
-### Accountability and Ownership
-Engineer should be given an opprotunity to take ownership of their work and proactively communicate progress, blockers, or design decisions.
-
-Overall, successful remote work relies on strong communication, clear documentation, and a culture of trust and accountability.
